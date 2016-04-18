@@ -25,16 +25,18 @@ app.use(session({
 		maxAge: 1000*60*10
 	}
 }));
-
 app.use(function(req,res,next){
+	console.log('中间件');
+	console.log(req.session.user);
 	res.locals.user=req.session.user;
 	var err=req.session.error;
 	res.locals.message='';
 	if(err){
 		res.locals.message='<div style="margin-bottom: 20px; color: red;"';
-		next();
 	}
+		next();
 })
+
 app.get('/logout',function(req,res){
 	req.session.user=null;
 	req.session.error=null;
@@ -42,23 +44,27 @@ app.get('/logout',function(req,res){
 
 })
 app.get('/index',function(req,res){
-	
 	res.render('index');
 });
 
 
 app.get('/',function(req,res){
+	console.log('render login'+req);
 	res.render('login');
 });
 app.post('/login',function(req,res){
+
+	console.log(req);
 	var user={
 		username:'admin',
 		password: 'admin'
 	}
 	console.log(req.body);
 	if(req.body.username==user.username&&req.body.password==user.password){
+		req.session.user=user;
 		res.send(200);
 	}else{
+		req.session.error='用户名或者密码错误';
 		res.send(404);
 	}
 	console.log('用户名称为'+req.body.username);
@@ -71,13 +77,12 @@ app.post('/login',function(req,res){
 // 	res.render('login');
 // });
 app.get('/home',function(req,res){
-	console.log(req.session);
+	console.log(req);
 	if(req.session.user){
 		res.render('home');
 	}else{
 		req.session.error="请先登录";
 		res.redirect('login');
 	}
-	res.render('home');
 });
 app.listen(4000);
